@@ -1,17 +1,37 @@
 import streamlit as st
+import pandas as pd
 
-st.title("Calculadora de Lucro na Pecuária")
+st.set_page_config(page_title="Boi no Lápis", layout="wide")
 
-valor_compra = st.number_input("Valor de compra do animal (R$)", value=0.0)
-custo_nutricao = st.number_input("Gasto total com ração (R$)", value=0.0)
-peso_final_kg = st.number_input("Peso final em KG", value=0.0)
-preco_venda_arroba = st.number_input("Preço de venda da arroba (R$)", value=0.0)
+st.title("📊 Boi no Lápis: Gestão e Gráficos")
 
-arrobas = peso_final_kg / 30
-custo_total = valor_compra + custo_nutricao
-receita_total = arrobas * preco_venda_arroba
-lucro_final = receita_total - custo_total
+col1, col2 = st.columns(2)
 
-if arrobas > 0:
-    st.write(f"Custo por arroba: R$ {custo_total / arrobas:.2f}")
-    st.write(f"Lucro final por animal: R$ {lucro_final:.2f}")
+with col1:
+    st.header("Dados do Lote")
+    valor_bezerro = st.number_input("Preço de compra do animal (R$)", 0.0)
+    custos_fixos = st.number_input("Custos de manejo e ração (R$)", 0.0)
+    peso_abate = st.number_input("Peso de abate (KG)", 0.0)
+    cotacao_venda = st.number_input("Preço da @ de venda (R$)", 0.0)
+
+with col2:
+    st.header("Painel de Resultados")
+    
+    total_arrobas = peso_abate / 30
+    investimento = valor_bezerro + custos_fixos
+    faturamento = total_arrobas * cotacao_venda
+    lucro_liquido = faturamento - investimento
+    
+    if total_arrobas > 0:
+        st.metric("Lucro Final", f"R$ {lucro_liquido:,.2f}")
+        st.metric("Ponto de Equilíbrio (@)", f"R$ {investimento/total_arrobas:,.2f}")
+        
+        # Preparação do gráfico comparativo
+        df = pd.DataFrame({
+            "Financeiro": ["Investimento", "Faturamento"],
+            "Valores (R$)": [investimento, faturamento]
+        })
+        
+        st.bar_chart(df.set_index("Financeiro"))
+    else:
+        st.info("Preencha os campos para visualizar indicadores financeiros.")
